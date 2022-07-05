@@ -33,8 +33,15 @@ spec:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8888"
         prometheus.io/path: /actuator/prometheus        
-    spec:
-      affinity: 
+      spec:
+        topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: one-pod-per-zone
+        affinity: 
          podAntiAffinity:
             requiredDuringSchedulingIgnoredDuringExecution:
             - labelSelector:
@@ -54,7 +61,7 @@ spec:
         - mountPath: /elastic/apm/agent 
           name: elastic-apm-agent 
         command: ['cp', '-v', '/usr/agent/elastic-apm-agent.jar', '/elastic/apm/agent']     
-      containers:
+    containers:
       - image: brainupgrade/sba-apiserver:observability
         name: sba-apiserver
         imagePullPolicy: Always
